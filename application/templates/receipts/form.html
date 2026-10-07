@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Регистрация чека — Чек на удачу{% endblock %}
+{% block content %}
+<section class="form-panel panel" id="registration">
+<a class="close" href="/" aria-label="Закрыть">×</a>
+<h1>Регистрация чека</h1>
+<p class="subtitle">Введите необходимые данные с чека</p>
+<form id="receipt-form" method="post" action="{% url 'receipt-new' %}" novalidate>
+{% csrf_token %}<div class="field">
+<label for="fn">ФН</label>
+<input id="fn" name="fn" inputmode="numeric" maxlength="16" placeholder="Введите ФН" autocomplete="off" aria-describedby="fn-error" required>
+<span class="field-error" id="fn-error"></span></div>
+<div class="field">
+<label for="fd">Номер чека</label>
+<input id="fd" name="fd" inputmode="numeric" placeholder="Введите номер чека (ФД)" autocomplete="off" aria-describedby="fd-error" required>
+<span class="field-error" id="fd-error"></span></div>
+<div class="field">
+<label for="fp">ФП</label>
+<input id="fp" name="fp" inputmode="numeric" maxlength="10" placeholder="Введите ФП" autocomplete="off" aria-describedby="fp-error" required>
+<span class="field-error" id="fp-error"></span></div>
+<div class="field">
+<label for="purchased">Дата покупки</label>
+<input id="purchased" name="purchased" type="datetime-local" aria-describedby="purchased-error" required>
+<span class="field-error" id="purchased-error"></span></div>
+<div class="field">
+<label for="amount">Сумма</label>
+<input id="amount" name="amount" inputmode="decimal" placeholder="0.00 ₽" autocomplete="off" aria-describedby="amount-error" required>
+<span class="field-error" id="amount-error"></span></div>
+<button type="submit" class="button submit">Загрузить</button>
+<p class="form-message" id="form-message" role="alert"></p></form>
+<p class="promo-period">Период акции: <time>{{ promo_start }}</time> — <time>{{ promo_end }}</time></p></section>
+
+{% endblock %}

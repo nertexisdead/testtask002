@@ -1,14 +1,12 @@
 from django.contrib import admin
-from django.http import HttpResponse, JsonResponse
 from django.urls import path
 
+from . import views
 
-def health(request):
-    return JsonResponse({"status": "ok"})
-
-
-def home(request):
-    return HttpResponse("<h1>Чек на удачу</h1><p>Пустой Django-проект готов к работе.</p>")
-
-
-urlpatterns = [path("", home), path("admin/", admin.site.urls), path("health/", health)]
+urlpatterns = [
+    path("", views.receipt_list, name="receipt-list"),
+    path("receipts/new/", views.receipt_new, name="receipt-new"),
+    path("receipts/success/", views.receipt_success, name="receipt-success"),
+    path("admin/", admin.site.urls),
+    path("health/", views.health),
+]

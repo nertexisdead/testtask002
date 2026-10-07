@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="history panel">
+    <div class="panel-heading">
+        <h1>История чеков</h1>
+        <span class="counter">Чеков внесено: <b>{{ receipt_count }} шт.</b></span>
+    </div>
+    {% if page_obj.object_list %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                {% for column in columns %}<th>
+<a href="?demo=filled&amp;sort={{ column.key }}&amp;direction={{ next_direction }}">{{ column.label }} <span>↕</span></a></th>{% endfor %}
+                <th>Информация</th>
+            </tr></thead>
+            <tbody>
+                {% for receipt in page_obj %}
+                    {% include "receipts/partials/row.html" %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "receipts/partials/pagination.html" %}
+    <div class="history-footer">
+        <p class="notice">
+<svg aria-hidden="true"><use href="#info"/></svg>Иногда проверка вашего чека может занять до 5 рабочих дней</p>
+        <a href="{% url 'receipt-new' %}" class="button">
+<svg aria-hidden="true"><use href="#receipt"/></svg>Зарегистрировать чек</a>
+    </div>
+    {% else %}
+        {% include "receipts/partials/empty.html" %}
+    {% endif %}
+</section>
+{% endblock %}

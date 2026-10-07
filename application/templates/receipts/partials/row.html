@@ -1,0 +1,19 @@
+<tr>
+    <td>
+<div class="cell">{% include "partials/receipt-thumb.html" %}<span>{{ receipt.purchased|date:"d.m.Y H:i" }}</span></div></td>
+    <td>
+<span class="badge {{ receipt.status }}">
+<span>{{ receipt.status_icon }}</span>{{ receipt.status_label }}</span></td>
+    <td>
+<div class="cell">
+<svg aria-hidden="true"><use href="#money"/></svg>
+<span>{{ receipt.amount }} ₽</span></div></td>
+    <td>
+<div class="cell">
+<svg aria-hidden="true"><use href="#calendar"/></svg>
+<span>{{ receipt.registered|date:"d.m.Y H:i" }}</span></div></td>
+    <td>
+<div class="cell">
+<svg aria-hidden="true"><use href="#info"/></svg>
+<span>{{ receipt.info }} {% if receipt.status == "rejected" %}<button type="button" class="detail-button" data-title="Причина отказа" data-message="{{ receipt.info }}">Подробнее</button>{% endif %}</span></div></td>
+</tr>
