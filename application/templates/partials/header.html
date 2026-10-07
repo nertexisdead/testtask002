@@ -1,19 +1,17 @@
 <header class="header">
-<div class="header-inner">
-<a class="brand" href="/" aria-label="Чек на удачу">
-<span class="brand-mark">Ч</span>
-<span>Чек на удачу</span></a>
-<a class="back-link" href="/">‹ <span>На сайт</span></a>
-<nav aria-label="Основная навигация">
-<a class="nav-link active" href="/">
-<svg><use href="#home"/></svg>Личный кабинет</a>
-<button class="nav-link" data-dialog="rules">
-<svg><use href="#receipt"/></svg>Правила</button>
-<button class="nav-link" data-dialog="profile">
-<svg><use href="#user"/></svg>Профиль</button></nav>
-<button class="notification icon-button" data-dialog="notifications" aria-label="Уведомления">
-<svg><use href="#bell"/></svg>
-<span></span></button>
-<button class="account" data-dialog="profile">
-<span class="avatar">ЕИ</span>
-<span><strong>Елена Иванова</strong><small>nameuser@email.com</small></span></button></div></header>
+    <div class="header-inner">
+        <a class="brand" href="{% url 'receipt-list' %}" aria-label="Чек на удачу"><span class="brand-mark">Ч</span><span>Чек на удачу</span></a>
+        <a class="back-link" href="{% url 'receipt-list' %}">‹ <span>На сайт</span></a>
+        {% if user.is_authenticated %}
+        <nav aria-label="Основная навигация">
+            <a class="nav-link active" href="{% url 'receipt-list' %}"><svg><use href="#home"/></svg>Личный кабинет</a>
+            <button type="button" class="nav-link" data-dialog="rules"><svg><use href="#receipt"/></svg>Правила</button>
+            <button type="button" class="nav-link" data-title="Профиль" data-message="{{ user.get_full_name|default:user.username }} · {{ user.email }}"><svg><use href="#user"/></svg>Профиль</button>
+        </nav>
+        <span class="account"><span class="avatar">{{ user.username|first|upper }}</span><span><strong>{{ user.get_full_name|default:user.username }}</strong><small>{{ user.email }}</small></span></span>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">{% csrf_token %}<button class="nav-link" type="submit">Выйти</button></form>
+        {% else %}
+        <nav><a class="nav-link" href="{% url 'login' %}">Войти</a><a class="nav-link" href="{% url 'register' %}">Регистрация</a></nav>
+        {% endif %}
+    </div>
+</header>

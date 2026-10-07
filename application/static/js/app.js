@@ -32,14 +32,46 @@ function validate(input){const value=input.value.trim();let error='';if(!value)e
 
 const form = $('#receipt-form');
 if (form) {
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
         const inputs = [...form.querySelectorAll('input:not([type="hidden"])')];
         const results = inputs.map(validate);
+        const message = $('#form-message');
+        message.textContent = '';
         if (results.includes(false)) {
-            event.preventDefault();
             inputs[results.indexOf(false)].focus();
+            return;
         }
-        // A valid form uses its normal HTML POST action.
+        const button = form.querySelector('[type="submit"]');
+        button.disabled = true;
+        button.textContent = 'Отправка…';
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST', body: new FormData(form),
+                headers: {'Accept': 'application/json'}, credentials: 'same-origin',
+            });
+            if (response.status === 403) throw new Error('Сессия устарела. Обновите страницу и попробуйте снова.');
+            const data = await response.json();
+            if (response.ok && data.ok) {
+                window.location.assign(data.redirect);
+                return;
+            }
+            if (data.message) message.textContent = data.message;
+            for (const [field, errors] of Object.entries(data.errors || {})) {
+                const input = form.elements.namedItem(field);
+                const target = $('#' + field + '-error');
+                if (input && target) {
+                    input.setAttribute('aria-invalid', 'true');
+                    target.textContent = errors.join(' ');
+                } else message.textContent = errors.join(' ');
+            }
+            form.querySelector('[aria-invalid="true"]')?.focus();
+        } catch (error) {
+            message.textContent = error.message || 'Не удалось отправить чек. Попробуйте снова.';
+        } finally {
+            button.disabled = false;
+            button.textContent = 'Загрузить';
+        }
     });
     form.querySelectorAll('input:not([type="hidden"])').forEach(input => {
         input.addEventListener('input', () => {

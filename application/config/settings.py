@@ -8,6 +8,7 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split("
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
+    "receipts.apps.ReceiptsConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware", "django.contrib.sessions.middleware.SessionMiddleware",
@@ -20,6 +21,7 @@ TEMPLATES = [{"BACKEND": "django.template.backends.django.DjangoTemplates", "DIR
     "APP_DIRS": True, "OPTIONS": {"context_processors": [
         "django.template.context_processors.request", "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
+        "config.context_processors.promotion",
     ]}}]
 WSGI_APPLICATION = "config.wsgi.application"
 from .db import DATABASES
@@ -43,3 +45,7 @@ PROMO_START = os.environ["PROMO_START"]
 PROMO_END = os.environ["PROMO_END"]
 
 from .local import *
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "receipt-list"
+LOGOUT_REDIRECT_URL = "login"

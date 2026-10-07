@@ -1,9 +1,9 @@
 {% if page_obj.paginator.num_pages > 1 %}
 <nav class="pagination" aria-label="Страницы истории">
-    {% if page_obj.has_previous %}<a href="?demo=filled&amp;page={{ page_obj.previous_page_number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" aria-label="Предыдущая страница">‹</a>{% endif %}
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" aria-label="Предыдущая страница">‹</a>{% endif %}
     {% for number in page_obj.paginator.page_range %}
-        <a href="?demo=filled&amp;page={{ number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" {% if number == page_obj.number %}class="current" aria-current="page"{% endif %}>{{ number }}</a>
+        <a href="?page={{ number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" {% if number == page_obj.number %}class="current" aria-current="page"{% endif %}>{{ number }}</a>
     {% endfor %}
-    {% if page_obj.has_next %}<a href="?demo=filled&amp;page={{ page_obj.next_page_number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" aria-label="Следующая страница">›</a>{% endif %}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&amp;sort={{ sort }}&amp;direction={{ direction }}" aria-label="Следующая страница">›</a>{% endif %}
 </nav>
 {% endif %}

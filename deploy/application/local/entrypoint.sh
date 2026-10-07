@@ -2,28 +2,12 @@
 set -euo pipefail
 
 get_db_setting() {
-  key="$1"
-  config="$DB_CONFIG_PATH"
-  if [ ! -f "$config" ]; then
-    echo "[entrypoint] ${config} not found" >&2
-    exit 1
-  fi
-
-  line=$(grep -m1 "['\"]${key}['\"]" "$config" | head -n1)
-  value=""
-  if [ -n "$line" ]; then
-    value=$(printf "%s\n" "$line" \
-      | awk -F: '{print $2}' \
-      | sed -e "s/^[[:space:]]*['\"]//" -e "s/['\",[:space:]]*$//")
-  fi
-
-  if [ -n "$value" ]; then
-    echo "$value"
-    return 0
-  fi
-
-  echo "[entrypoint] Missing ${key} in ${config}" >&2
-  exit 1
+  python3 - "$DB_CONFIG_PATH" "$1" <<'PY'
+import runpy
+import sys
+value = runpy.run_path(sys.argv[1])["DATABASES"]["default"][sys.argv[2]]
+print(value)
+PY
 }
 
 run_as_application() {

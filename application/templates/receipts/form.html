@@ -8,26 +8,26 @@
 <form id="receipt-form" method="post" action="{% url 'receipt-new' %}" novalidate>
 {% csrf_token %}<div class="field">
 <label for="fn">ФН</label>
-<input id="fn" name="fn" inputmode="numeric" maxlength="16" placeholder="Введите ФН" autocomplete="off" aria-describedby="fn-error" required>
-<span class="field-error" id="fn-error"></span></div>
+<input id="fn" name="fn" value="{{ form.fn.value|default_if_none:'' }}" inputmode="numeric" maxlength="16" placeholder="Введите ФН" autocomplete="off" aria-describedby="fn-error" required>
+<span class="field-error" id="fn-error">{% for error in form.fn.errors %}{{ error }}{% endfor %}</span></div>
 <div class="field">
 <label for="fd">Номер чека</label>
-<input id="fd" name="fd" inputmode="numeric" placeholder="Введите номер чека (ФД)" autocomplete="off" aria-describedby="fd-error" required>
-<span class="field-error" id="fd-error"></span></div>
+<input id="fd" name="fd" value="{{ form.fd.value|default_if_none:'' }}" inputmode="numeric" placeholder="Введите номер чека (ФД)" autocomplete="off" aria-describedby="fd-error" required>
+<span class="field-error" id="fd-error">{% for error in form.fd.errors %}{{ error }}{% endfor %}</span></div>
 <div class="field">
 <label for="fp">ФП</label>
-<input id="fp" name="fp" inputmode="numeric" maxlength="10" placeholder="Введите ФП" autocomplete="off" aria-describedby="fp-error" required>
-<span class="field-error" id="fp-error"></span></div>
+<input id="fp" name="fp" value="{{ form.fp.value|default_if_none:'' }}" inputmode="numeric" maxlength="10" placeholder="Введите ФП" autocomplete="off" aria-describedby="fp-error" required>
+<span class="field-error" id="fp-error">{% for error in form.fp.errors %}{{ error }}{% endfor %}</span></div>
 <div class="field">
 <label for="purchased">Дата покупки</label>
-<input id="purchased" name="purchased" type="datetime-local" aria-describedby="purchased-error" required>
-<span class="field-error" id="purchased-error"></span></div>
+<input id="purchased" name="purchased" value="{{ form.purchased.value|default_if_none:'' }}" type="datetime-local" aria-describedby="purchased-error" required>
+<span class="field-error" id="purchased-error">{% for error in form.purchased.errors %}{{ error }}{% endfor %}</span></div>
 <div class="field">
 <label for="amount">Сумма</label>
-<input id="amount" name="amount" inputmode="decimal" placeholder="0.00 ₽" autocomplete="off" aria-describedby="amount-error" required>
-<span class="field-error" id="amount-error"></span></div>
+<input id="amount" name="amount" value="{{ form.amount.value|default_if_none:'' }}" inputmode="decimal" placeholder="0.00 ₽" autocomplete="off" aria-describedby="amount-error" required>
+<span class="field-error" id="amount-error">{% for error in form.amount.errors %}{{ error }}{% endfor %}</span></div>
 <button type="submit" class="button submit">Загрузить</button>
-<p class="form-message" id="form-message" role="alert"></p></form>
-<p class="promo-period">Период акции: <time>{{ promo_start }}</time> — <time>{{ promo_end }}</time></p></section>
+<p class="form-message" id="form-message" role="alert">{{ form.non_field_errors|striptags }}</p></form>
+<p class="promo-period">Период акции: <time>{{ promo_start }}</time> — <time>{{ promo_end }}</time><br>Время покупки: {{ promo_timezone }}</p></section>
 
 {% endblock %}

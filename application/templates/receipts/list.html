@@ -10,7 +10,7 @@
         <table>
             <thead><tr>
                 {% for column in columns %}<th>
-<a href="?demo=filled&amp;sort={{ column.key }}&amp;direction={{ next_direction }}">{{ column.label }} <span>↕</span></a></th>{% endfor %}
+<a href="?sort={{ column.key }}&amp;direction={{ next_direction }}">{{ column.label }} <span>↕</span></a></th>{% endfor %}
                 <th>Информация</th>
             </tr></thead>
             <tbody>

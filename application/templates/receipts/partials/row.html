@@ -1,9 +1,9 @@
 <tr>
     <td>
-<div class="cell">{% include "partials/receipt-thumb.html" %}<span>{{ receipt.purchased|date:"d.m.Y H:i" }}</span></div></td>
+<div class="cell">{% include "partials/receipt-thumb.html" %}<span>{{ receipt.purchased_at|date:"d.m.Y H:i" }}</span></div></td>
     <td>
 <span class="badge {{ receipt.status }}">
-<span>{{ receipt.status_icon }}</span>{{ receipt.status_label }}</span></td>
+<span>{{ receipt.status_icon }}</span>{{ receipt.get_status_display }}</span></td>
     <td>
 <div class="cell">
 <svg aria-hidden="true"><use href="#money"/></svg>
@@ -11,7 +11,7 @@
     <td>
 <div class="cell">
 <svg aria-hidden="true"><use href="#calendar"/></svg>
-<span>{{ receipt.registered|date:"d.m.Y H:i" }}</span></div></td>
+<span>{{ receipt.created_at|date:"d.m.Y H:i" }}</span></div></td>
     <td>
 <div class="cell">
 <svg aria-hidden="true"><use href="#info"/></svg>

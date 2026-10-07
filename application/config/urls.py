@@ -1,12 +1,14 @@
 from django.contrib import admin
-from django.urls import path
-
-from . import views
+from django.contrib.auth import views as auth_views
+from django.http import JsonResponse
+from django.urls import include, path
+from accounts.views import register
 
 urlpatterns = [
-    path("", views.receipt_list, name="receipt-list"),
-    path("receipts/new/", views.receipt_new, name="receipt-new"),
-    path("receipts/success/", views.receipt_success, name="receipt-success"),
     path("admin/", admin.site.urls),
-    path("health/", views.health),
+    path("accounts/register/", register, name="register"),
+    path("accounts/login/", auth_views.LoginView.as_view(), name="login"),
+    path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("health/", lambda request: JsonResponse({"status": "ok"})),
+    path("", include("receipts.urls")),
 ]
