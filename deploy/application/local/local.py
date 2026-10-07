@@ -1,0 +1,9 @@
+DEBUG = True
+STATIC_ROOT = "/runtime/static_collected"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "testtask002_mailpit"
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+EMAIL_TIMEOUT = 5
+DEFAULT_FROM_EMAIL = "noreply@testtask002.localhost"

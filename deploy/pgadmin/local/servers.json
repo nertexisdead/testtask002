@@ -1,0 +1,13 @@
+{
+    "Servers": {
+        "1": {
+            "Group": "Preconfigured Connections",
+            "Name": "testtask002",
+            "Host": "testtask002_postgresql",
+            "Port": 5432,
+            "MaintenanceDB": "testtask002",
+            "Username": "testtask002",
+            "Favorite": true
+        }
+    }
+}

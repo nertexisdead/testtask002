@@ -1,0 +1,2 @@
+# example each Thursday at 16:00 Moscow time
+20 11 * * 5 echo "Cron is working. Current timestamp: $(date '+%Y-%m-%d %H:%M:%S %Z')" >> /var/log/cron/example.log 2>&1

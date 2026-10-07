@@ -1,0 +1,271 @@
+name: testtask002
+services:
+  testtask002_traefik:
+    image: traefik:v3.6.20@sha256:cc1799c50550f730f686df9b368e690f9199542787db8d1dd328a7c3779f6eea
+    command:
+      - --log.level=DEBUG
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+      - --providers.docker.network=testtask002_traefik_default
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --ping=true
+      - --ping.entryPoint=traefik
+      - --entrypoints.web.address=:80
+      - --entryPoints.web.forwardedHeaders.trustedIPs=0.0.0.0/0
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+        read_only: true
+    ports:
+      - target: 80
+        published: ${APP_PORT:-80}
+        protocol: tcp
+        mode: host
+    networks:
+      - testtask002_traefik_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.testtask002_traefik_dashbord.rule=Host(`traefik.testtask002.localhost`)"
+      - "traefik.http.routers.testtask002_traefik_dashbord.entrypoints=web"
+      - "traefik.http.routers.testtask002_traefik_dashbord.service=api@internal"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  testtask002_caddy:
+    image: caddy:2.11.4-alpine@sha256:77c07d5ebfa5be9fd6c820d2094ae662c9e7eeb9bf98346b7f639900263ee2a2
+    networks:
+      - testtask002_traefik_default
+    volumes:
+      - source: ./application
+        target: /application
+        type: bind
+        read_only: true
+      - source: testtask002_application_static
+        target: /runtime/static_collected
+        type: volume
+        read_only: true
+      - source: ./deploy/caddy/local/Caddyfile
+        target: /etc/caddy/Caddyfile
+        type: bind
+        read_only: true
+      - source: ./deploy/caddy/local/redirects.caddy
+        target: /etc/caddy/redirects.caddy
+        type: bind
+        read_only: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.testtask002_caddy.rule: Host(`testtask002.localhost`)
+      traefik.http.routers.testtask002_caddy.entrypoints: web
+      traefik.http.routers.testtask002_caddy.service: testtask002_caddy
+      traefik.http.services.testtask002_caddy.loadbalancer.server.port: "80"
+    depends_on:
+      testtask002_application:
+        condition: service_started
+      testtask002_traefik:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  testtask002_application:
+    build:
+      context: .
+      dockerfile: deploy/application/local/Dockerfile
+    working_dir: /application
+    env_file: .env
+    environment:
+      TZ: Europe/Moscow
+      ENV: /opt/venv/bin/activate
+    volumes:
+      - source: ./application
+        target: /application
+        type: bind
+      - source: testtask002_application_venv
+        target: /opt/venv
+        type: volume
+      - source: testtask002_application_static
+        target: /runtime/static_collected
+        type: volume
+      - source: ./deploy/application/local/local.py
+        target: /application/config/local.py
+        type: bind
+        read_only: true
+      - source: ./deploy/application/local/db.py
+        target: /application/config/db.py
+        type: bind
+        read_only: true
+      - source: ./deploy/application/local/supervisord.conf
+        target: /etc/supervisord.conf
+        type: bind
+        read_only: true
+      - source: ./deploy/application/local/cron
+        target: /local-config/cron
+        type: bind
+        read_only: true
+      - source: ./deploy/application/local/logrotate.d
+        target: /local-config/logrotate.d
+        type: bind
+        read_only: true
+      - source: testtask002_application_logs
+        target: /var/log/cron
+        type: volume
+    networks:
+      - testtask002_traefik_default
+    depends_on:
+      testtask002_postgresql:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  testtask002_postgresql:
+    image: postgres:17.5-alpine3.20@sha256:ccd14e0306cef4c2943a4bda5a2c6a77201a426eb2576d888e5cdc28ccddca75
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=ru_RU.UTF-8
+    volumes:
+      - source: testtask002_postgresql_data
+        target: /var/lib/postgresql/data
+        type: volume
+      - source: ./deploy/postgresql/local/init.sql
+        target: /docker-entrypoint-initdb.d/10-init.sql
+        type: bind
+        read_only: true
+    networks:
+      - testtask002_traefik_default
+    command: >-
+      postgres
+        -c ssl=off
+        -c shared_buffers=1GB
+        -c huge_pages=off
+        -c temp_buffers=64MB
+        -c work_mem=16MB
+        -c maintenance_work_mem=32MB
+        -c wal_level=replica
+        -c max_wal_senders=0
+        -c synchronous_commit=local
+        -c full_page_writes=on
+        -c checkpoint_completion_target=0.9
+        -c random_page_cost=1.1
+        -c effective_cache_size=256MB
+        -c default_statistics_target=200
+        -c log_checkpoints=on
+        -c log_lock_waits=on
+        -c log_timezone='Europe/Moscow'
+        -c track_io_timing=on
+        -c track_functions=all
+        -c track_activity_query_size=4096
+        -c autovacuum_naptime=5min
+        -c autovacuum_vacuum_scale_factor=0.15
+        -c autovacuum_analyze_scale_factor=0.1
+        -c autovacuum_vacuum_cost_delay=20ms
+        -c timezone='Europe/Moscow'
+        -c max_locks_per_transaction=128
+        -c max_connections=20
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  testtask002_pgadmin:
+    image: dpage/pgadmin4:9.12.0@sha256:10137f33be7ed61e47f56004493710cb5b80ba7fb0ca01758855e242f1f284a7
+    environment:
+      PGADMIN_DISABLE_POSTFIX: "yes"
+      PGADMIN_DEFAULT_EMAIL: admin@admin.ru
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - source: testtask002_pgadmin_data
+        target: /var/lib/pgadmin
+        type: volume
+      - source: ./deploy/pgadmin/local/servers.json
+        target: /pgadmin4/servers.json
+        type: bind
+    networks:
+      - testtask002_traefik_default
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.testtask002_pgadmin.rule: Host(`pgadmin.testtask002.localhost`)
+      traefik.http.routers.testtask002_pgadmin.entrypoints: web
+      traefik.http.routers.testtask002_pgadmin.service: testtask002_pgadmin
+      traefik.http.services.testtask002_pgadmin.loadbalancer.server.port: '80'
+    depends_on:
+      testtask002_postgresql:
+        condition: service_healthy
+      testtask002_traefik:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  testtask002_mailpit:
+    image: axllent/mailpit:v1.29@sha256:757f22b56c1da03570afdb3d259effe5091018008a81bbedc8158cee7e16fdbc
+    environment:
+      - MP_MAX_MESSAGES=100000
+      - MP_MESSAGE_LIMIT=0
+    networks:
+      - testtask002_traefik_default
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.testtask002_mailpit.rule: Host(`mailpit.testtask002.localhost`)
+      traefik.http.routers.testtask002_mailpit.entrypoints: web
+      traefik.http.routers.testtask002_mailpit.service: testtask002_mailpit
+      traefik.http.services.testtask002_mailpit.loadbalancer.server.port: '8025'
+    depends_on:
+      testtask002_traefik:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  testtask002_application_venv:
+    name: testtask002_application_venv
+    driver: local
+  testtask002_application_static:
+    name: testtask002_application_static
+    driver: local
+  testtask002_application_logs:
+    name: testtask002_application_logs
+    driver: local
+  testtask002_postgresql_data:
+    name: testtask002_postgresql_data
+    driver: local
+  testtask002_pgadmin_data:
+    name: testtask002_pgadmin_data
+    driver: local
+
+networks:
+  testtask002_traefik_default:
+    name: testtask002_traefik_default
+    attachable: true

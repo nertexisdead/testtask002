@@ -1,0 +1,27 @@
+import ./redirects.caddy
+
+http://:80 {
+	encode gzip zstd
+
+	log {
+		output stdout
+		format console
+		level WARN
+	}
+
+	import testtask002_redirects
+
+	handle /static_collected/* {
+		root * /runtime
+		file_server
+	}
+
+	handle /media/* {
+		root * /application
+		file_server
+	}
+
+	handle {
+		reverse_proxy testtask002_application:8000
+	}
+}
